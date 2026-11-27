@@ -64,7 +64,7 @@ The project includes:
           Request and facilitate user testing as appropriate.
 
 
-##Inkling 2 Mini -- the LLM model##
+## Inkling 2 Mini -- the LLM model
 
 - General Information: Inkling 2 Mini is a general-purpose multimodal model that accepts text and image inputs and generates text outputs. It is intended for use in English and other languages, and across multiple coding languages. The model is designed to be used by developers building AI-powered applications, including agentic and tool-use systems, coding assistants, chatbots, and retrieval-augmented generation systems, and is suitable for general-purpose conversational use, instruction-following, and other natural language and visual tasks. It is released with open weights to support research, fine-tuning and integration into third-party products by downstream developers.
 
