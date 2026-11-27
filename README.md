@@ -37,7 +37,7 @@ The project includes:
 
 - MYbot is individualized and growing (learning, aging).
 
-##Plan:##
+## Plan
 
 **Goal and users:**
 - a locally run LLM, that can replace some functions of Claude locally, avoiding charges for tokens.
