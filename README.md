@@ -37,3 +37,30 @@ The project includes:
 
 -MYbot is individualized and growing.
 
+** Plan:
+     Goal and users: 
+          a locally run LLM, that can replace some functions of Claude locally, avoiding charges for tokens.
+          a chat agent based on it, that can answer my queries and assist in VSCode, etc.
+          a platform for experimental research on AI agent cognition
+
+     Concrete behaviors: 
+          post-training of LLM on pdfs of writings that are relevant to me. Alternatively, RAG access to a library of pdfs (including from my other projects).
+          analogs of: 
+              self-consciousness, 
+              continuous temporal awareness across sessions, 
+              theory-of-mind awareness of profiles of me and other people,
+              memory of all previous sessions, including queries and <thinking>
+              records of reasoning
+
+     Constraints: 
+          run entirely locally on Mac Pro M5 with 32GB RAM and 4 TB storage
+
+     Structure: 
+          File folders are defined in ~AI/mybot/
+          Storage of session memory, etc in JSON/PKL files, synchronized for efficiencly and human-readability
+          End of development sessions: clean up code, tests of code, update documentation, upload to GitHub and commit
+
+     Tests:
+          Request and facilitate user testing as appropriate.
+
+
