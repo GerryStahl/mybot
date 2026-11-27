@@ -37,13 +37,14 @@ The project includes:
 
 - MYbot is individualized and growing (learning, aging).
 
-**Plan:**
-***Goal and users:*** 
+##Plan:##
+
+**Goal and users:**
 - a locally run LLM, that can replace some functions of Claude locally, avoiding charges for tokens.
 - a chat agent based on it, that can answer my queries and assist in VSCode, etc.
 - a platform for experimental research on AI agent cognition
 
-***Concrete behaviors:*** 
+**Concrete behaviors:** 
 - post-training or fine-tuning of LLM on pdfs of writings that are relevant to me. Alternatively, RAG access to a library of pdfs (including from my other projects).
 - analog of self-consciousness, 
 - analog of continuous temporal awareness across sessions, 
@@ -51,25 +52,21 @@ The project includes:
 - analog of memory of all previous sessions, including queries and <thinking>
 - analog of records of reasoning
 
-***Constraints:*** 
+**Constraints:** 
 - run entirely locally on Mac Pro M5 with 32GB RAM and 4 TB storage
 
-***Structure:*** 
+**Structure:** 
 - File folders are defined in ~AI/mybot/
 - Storage of session memory, etc in JSON/PKL files, synchronized for efficiencly and human-readability
  - End of development sessions: clean up code, tests of code, update documentation, upload to GitHub and commit
 
-***Tests:***
+**Tests:**
           Request and facilitate user testing as appropriate.
 
-**The End**
 
+##Inkling 2 Mini -- the LLM model##
 
-*Inkling 2 Mini -- the LLM model*
-
-1. General Information
-
-- Inkling 2 Mini is a general-purpose multimodal model that accepts text and image inputs and generates text outputs. It is intended for use in English and other languages, and across multiple coding languages. The model is designed to be used by developers building AI-powered applications, including agentic and tool-use systems, coding assistants, chatbots, and retrieval-augmented generation systems, and is suitable for general-purpose conversational use, instruction-following, and other natural language and visual tasks. It is released with open weights to support research, fine-tuning and integration into third-party products by downstream developers.
+- General Information: Inkling 2 Mini is a general-purpose multimodal model that accepts text and image inputs and generates text outputs. It is intended for use in English and other languages, and across multiple coding languages. The model is designed to be used by developers building AI-powered applications, including agentic and tool-use systems, coding assistants, chatbots, and retrieval-augmented generation systems, and is suitable for general-purpose conversational use, instruction-following, and other natural language and visual tasks. It is released with open weights to support research, fine-tuning and integration into third-party products by downstream developers.
 
 - Date of release: November 20, 2026
 
