@@ -5,10 +5,10 @@ This project creates a local chatbot on my M5 MacBook laptop
 The project includes: 
 - setting up a local small LLM with open weights.
 - defining multiple forms of memory
-- post-training the model with documents from ijCSCL and my eLibrary, as well as philosophy texts
+- post-training or fine-tuning the model with documents from ijCSCL and my eLibrary, as well as philosophy texts
 - studying its reasoning
 - saving its interactions to memory
-- post-training with its history of interactions so it learns and grows continuously
+- post-training or fine-tuning with its history of interactions so it learns and grows continuously
 - investigating the model's thinking in order to compare human cognition, group cognition and agent cognition
 
 ## Project Goals
@@ -20,7 +20,7 @@ The project includes:
 
 - MYbot's reasoning is permanently included in its memories of interactions.
 
-- MYbot is post-trained on my writings (300 essays) and on ijCSCL articles (300 articles) and on philosophy texts.
+- MYbot is post-trained or fine-tuning on my writings (300 essays) and on ijCSCL articles (300 articles) and on philosophy texts.
 
 - MYbot learns from its interactions and is post-trained periodically on its past interactions.
 
@@ -44,7 +44,7 @@ The project includes:
 - a platform for experimental research on AI agent cognition
 
 ***Concrete behaviors:*** 
-- post-training of LLM on pdfs of writings that are relevant to me. Alternatively, RAG access to a library of pdfs (including from my other projects).
+- post-training or fine-tuning of LLM on pdfs of writings that are relevant to me. Alternatively, RAG access to a library of pdfs (including from my other projects).
 - analog of self-consciousness, 
 - analog of continuous temporal awareness across sessions, 
 - analog of theory-of-mind awareness of profiles of me and other people,
@@ -63,4 +63,25 @@ The project includes:
           Request and facilitate user testing as appropriate.
 
 **The End**
+
+
+*Inkling 2 Mini -- the LLM model*
+
+1. General Information
+
+- Inkling 2 Mini is a general-purpose multimodal model that accepts text and image inputs and generates text outputs. It is intended for use in English and other languages, and across multiple coding languages. The model is designed to be used by developers building AI-powered applications, including agentic and tool-use systems, coding assistants, chatbots, and retrieval-augmented generation systems, and is suitable for general-purpose conversational use, instruction-following, and other natural language and visual tasks. It is released with open weights to support research, fine-tuning and integration into third-party products by downstream developers.
+
+- Date of release: November 20, 2026
+
+- On Apple Silicon: Ollama and Exo Labs
+
+- Inkling 2 Mini can also be post-trained with: Miles, SkyRL
+
+- Inkling 2 Mini can also be fine-tuned with: Tinker
+
+ - Architecture type: A 24-layer decoder-only transformer with sparse Mixture-of-Experts (MoE) feed-forward layers. The middle 12 layers run three times with shared weights, giving 48 layer applications per token from 24 layers of weights. In each layer, each token is routed to 8 of 128 experts. Attention is a hybrid of local and global layers. The model is natively multimodal – images are encoded via a vision transformer – with image and text inputs projected into a shared hidden space and processed jointly by the decoder.
+
+- Parameters:26.4B, 3.4B active; Note: each extra pass through the looped layers adds about 1.0B effective active parameters. Since the model runs with three passes, there are 5.4B effective active parameters per token.
+
+
 
