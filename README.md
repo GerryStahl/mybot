@@ -30,14 +30,14 @@ The project includes:
 - Capture history of MYbots interactions
 - Capture history of MYbots special post-trainings, and other experimental features added.
 
-**Commentary & Notes **
--MYbot is a "personal AI agent," not a universal one. It is based on a commercial LLM model that is universal. But then it is personalized to a specific user or user community -- those who use the particular computer that MYbot runs on.
+**Commentary & Notes:**
+- MYbot is a "personal AI agent," not a universal one. It is based on a commercial LLM model that is universal. But then it is personalized to a specific user or user community -- those who use the particular computer that MYbot runs on.
 
 - This particular bot started with the universal training common to the commercial model it started from. But it is open-weights, which means its parameters, which store its knowledge, can be changed, so that it is no longer identical to other models based on the same commercial model. All the experimental aspects of. MYbot are specific to the version running on this computer. For instance, weights are changed by post-training and other forms of continued learning, such as additional on-going training using the history of query/response interactions.
 
--MYbot is individualized and growing.
+- MYbot is individualized and growing.
 
-** Plan:
+**Plan:**
      Goal and users: 
           a locally run LLM, that can replace some functions of Claude locally, avoiding charges for tokens.
           a chat agent based on it, that can answer my queries and assist in VSCode, etc.
@@ -63,4 +63,5 @@ The project includes:
      Tests:
           Request and facilitate user testing as appropriate.
 
+**The End**
 
