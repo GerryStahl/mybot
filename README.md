@@ -80,5 +80,20 @@ The project includes:
 
 - Parameters:26.4B, 3.4B active; Note: each extra pass through the looped layers adds about 1.0B effective active parameters. Since the model runs with three passes, there are 5.4B effective active parameters per token.
 
+## Initial steps
+
+- Update Ollama. Use the menu-bar icon and choose "Restart to update", or install from ollama.com/download. Then check ollama --version shows 0.40.17 or newer.
+
+- Pull the model. Run ollama pull inkling-2-mini. This is the default tag, 26b-a5b. There is also an MLX build, inkling-2-mini:26b-a5b-nvfp4, that may run faster on Apple Silicon.
+
+- Smoke test. Run ollama run inkling-2-mini "Hello", then check memory use and speed in Activity Monitor.
+
+- Set the context size. The model supports a 1M-token context, but your RAM can't handle that. Start with 32k, for example /set parameter num_ctx 32768. The server's default already comes out at 32768.
+
+- Create a MYbot Modelfile. Build FROM inkling-2-mini with a system prompt, then run ollama create mybot -f Modelfile. Keep it in ~/AI/mybot/ so it is tracked in git.
+
+- Call it from code. Use the Ollama Python client or the local API at localhost:11434 for the memory layer (JSON files, then RAG over your PDFs).
+
+- Fine-tuning comes later. Ollama only runs models; it can't fine-tune them. The README lists Tinker for fine-tuning and Miles or SkyRL for post-training. Fine-tuned weights would need converting back to GGUF or MLX to run in Ollama.
 
 
