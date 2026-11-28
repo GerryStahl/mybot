@@ -1,0 +1,9 @@
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E402"]  # sys.path is adjusted before importing core
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

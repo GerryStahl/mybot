@@ -97,3 +97,16 @@ The project includes:
 - Fine-tuning comes later. Ollama only runs models; it can't fine-tune them. The README lists Tinker for fine-tuning and Miles or SkyRL for post-training. Fine-tuned weights would need converting back to GGUF or MLX to run in Ollama.
 
 
+
+
+## Chat UI
+
+- Setup (once): `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`, then `ollama create mybot -f Modelfile`.
+- Run: `.venv/bin/streamlit run src/app_streamlit.py` and open http://localhost:8501 (Ollama must be running).
+- `src/core.py` holds the chat and history logic with no UI code; `src/app_streamlit.py` is a thin Streamlit layer. A FastAPI + HTML front end can reuse `core.py`.
+- Each chat, including the model's thinking, is saved as JSON in `history/`.
+
+## End-of-day routine
+
+- Run `scripts/end_of_day.sh [-m "commit message"] [-n]` (`-n` = dry run). It cleans caches, lints and formats with ruff, runs pytest, warns if code changed without a README update, then commits and pushes. It stops at the first failure.
+- Chat history (`history/*.json`) is git-ignored because the repository is public.
