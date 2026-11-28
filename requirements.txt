@@ -2,3 +2,10 @@ ollama
 streamlit
 pytest
 ruff
+bm25s==0.3.2
+PyStemmer
+sentence-transformers
+numpy
+fastapi
+uvicorn
+httpx

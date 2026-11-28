@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MYbot</title>
+<style>
+  :root {
+    --bg: #eaf5e4;          /* page */
+    --panel: #d5ebcc;       /* sidebar */
+    --card: #f6fbf2;        /* message bubbles, inputs */
+    --accent: #2e7d32;      /* buttons, links */
+    --accent-dark: #1f5a23;
+    --text: #1f2d1f;
+    --muted: #55705a;
+    --line: #b9d8ae;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; height: 100vh; display: flex; background: var(--bg); color: var(--text);
+         font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  aside { width: 300px; flex: none; background: var(--panel); border-right: 1px solid var(--line);
+          padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+  aside h1 { margin: 0; font-size: 1.6rem; }
+  .muted { color: var(--muted); font-size: .85rem; }
+  button { font: inherit; cursor: pointer; border: 1px solid var(--accent); border-radius: 8px;
+           background: var(--accent); color: #fff; padding: 7px 12px; }
+  button:hover { background: var(--accent-dark); }
+  button.plain { background: var(--card); color: var(--text); border-color: var(--line); text-align: left;
+                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+  button.plain:hover { background: #fff; }
+  button:disabled { opacity: .5; cursor: default; }
+  select, input[type=text], textarea { font: inherit; width: 100%; padding: 7px 9px; color: var(--text);
+           background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+  .row { display: flex; gap: 6px; }
+  .options { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .options h2, aside h2 { margin: 0 0 6px; font-size: .95rem; }
+  .options label { display: block; font-weight: 600; }
+  .options .hint { margin: 2px 0 10px 26px; }
+  .options input { accent-color: var(--accent); width: 17px; height: 17px; margin-right: 8px; vertical-align: -3px; }
+  main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  header { padding: 12px 24px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between;
+           align-items: baseline; gap: 12px; }
+  header h2 { margin: 0; font-size: 1.15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #messages { flex: 1; overflow-y: auto; padding: 18px 24px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 860px; padding: 10px 14px; border-radius: 12px; background: var(--card);
+         border: 1px solid var(--line); overflow-wrap: anywhere; }
+  .msg.user { align-self: flex-end; background: #c9e6bd; white-space: pre-wrap; }
+  .msg p { margin: .4em 0; } .msg ul, .msg ol { margin: .4em 0; padding-left: 1.4em; }
+  .msg pre { background: #e3f0dc; padding: 8px 10px; border-radius: 8px; overflow-x: auto; }
+  .msg code { background: #e3f0dc; padding: 1px 4px; border-radius: 4px; }
+  .msg pre code { padding: 0; background: none; }
+  details { margin: 4px 0; color: var(--muted); font-size: .9rem; }
+  details summary { cursor: pointer; }
+  .searched { color: var(--muted); font-size: .85rem; font-style: italic; }
+  .error { color: #a12; }
+  .composer { padding: 12px 24px 18px; border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: flex-end; }
+  .composer textarea { resize: none; max-height: 200px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<aside>
+  <div><h1>MYbot</h1><div class="muted" id="model"></div></div>
+  <button id="new">New chat</button>
+
+  <div>
+    <h2>Talking with</h2>
+    <select id="user"></select>
+    <div class="row" style="margin-top:6px">
+      <input type="text" id="newuser" placeholder="Add a person">
+      <button id="adduser">Add</button>
+    </div>
+  </div>
+
+  <div class="options">
+    <h2>Options for your next message</h2>
+    <label><input type="checkbox" id="memory" checked>Use memory</label>
+    <div class="muted hint">MYbot also considers its self-model, your profile and your earlier chats.</div>
+    <label><input type="checkbox" id="library">Search the library</label>
+    <div class="muted hint" id="libhint">Click here to search the ijCSCL articles and Gerry Stahl's e-library as part of
+      your question. MYbot then answers from the passages found and cites them.</div>
+  </div>
+
+  <div>
+    <h2>History</h2>
+    <div id="history" style="display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+</aside>
+
+<main>
+  <header><h2 id="title">New chat</h2><span class="muted" id="left"></span></header>
+  <div id="messages"></div>
+  <form class="composer" id="form">
+    <textarea id="input" rows="2" placeholder="Message MYbot (Enter to send, Shift+Enter for a new line)"></textarea>
+    <button id="send">Send</button>
+  </form>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let sessionId = null, maxQuestions = 8, busy = false, questionsLeft = 8;
+
+// --- minimal, safe Markdown: everything is escaped first, then a few patterns are turned into tags
+function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function inline(t) {
+  return esc(t).replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+}
+function markdown(src) {
+  const out = [], lines = src.split("\n");
+  let list = null, code = null;
+  const close = () => { if (list) { out.push(`</${list}>`); list = null; } };
+  for (const line of lines) {
+    if (line.startsWith("```")) {
+      if (code === null) { close(); code = []; } else { out.push(`<pre><code>${esc(code.join("\n"))}</code></pre>`); code = null; }
+      continue;
+    }
+    if (code !== null) { code.push(line); continue; }
+    let m;
+    if ((m = line.match(/^\s*[-*]\s+(.*)/))) { if (list !== "ul") { close(); out.push("<ul>"); list = "ul"; } out.push(`<li>${inline(m[1])}</li>`); }
+    else if ((m = line.match(/^\s*\d+[.)]\s+(.*)/))) { if (list !== "ol") { close(); out.push("<ol>"); list = "ol"; } out.push(`<li>${inline(m[1])}</li>`); }
+    else if ((m = line.match(/^#{1,6}\s+(.*)/))) { close(); out.push(`<p><strong>${inline(m[1])}</strong></p>`); }
+    else if (line.trim() === "") close();
+    else { close(); out.push(`<p>${inline(line)}</p>`); }
+  }
+  if (code !== null) out.push(`<pre><code>${esc(code.join("\n"))}</code></pre>`);
+  close();
+  return out.join("");
+}
+
+// --- rendering
+function bubble(role) {
+  const div = document.createElement("div");
+  div.className = "msg " + role;
+  $("messages").appendChild(div);
+  return div;
+}
+function sourcesHtml(sources) {
+  return `<details><summary>Library sources</summary><ul>${sources.map((s) => `<li>${esc(s)}</li>`).join("")}</ul></details>`;
+}
+function renderMessage(m) {
+  const div = bubble(m.role);
+  if (m.role === "user") { div.textContent = m.content; return; }
+  if (m.searched_for) div.insertAdjacentHTML("beforeend", `<div class="searched">Searched for: ${esc(m.searched_for)}</div>`);
+  if (m.thinking) div.insertAdjacentHTML("beforeend", `<details><summary>Thinking</summary>${markdown(m.thinking)}</details>`);
+  div.insertAdjacentHTML("beforeend", markdown(m.content));
+  if (m.sources && m.sources.length) div.insertAdjacentHTML("beforeend", sourcesHtml(m.sources));
+}
+function scrollDown() { $("messages").scrollTop = $("messages").scrollHeight; }
+function setLeft(left) {
+  questionsLeft = left;
+  $("left").textContent = left > 0 ? `${left} question${left === 1 ? "" : "s"} left in this chat` : "This chat is full. Start a new chat.";
+  $("send").disabled = busy || left <= 0;
+}
+
+async function loadState() {
+  const s = await (await fetch("/api/state")).json();
+  $("model").textContent = "Local model: " + s.model;
+  maxQuestions = s.max_questions;
+  fillUsers(s.users, s.default_user);
+  if (!s.library_available) { $("library").disabled = true; $("libhint").textContent = "The library index is not installed (data/library)."; }
+  fillHistory(s.sessions);
+  setLeft(maxQuestions);
+}
+function fillUsers(users, selected) {
+  $("user").innerHTML = users.map((u) => `<option>${esc(u)}</option>`).join("");
+  if (users.includes(selected)) $("user").value = selected;
+}
+function fillHistory(sessions) {
+  $("history").innerHTML = "";
+  for (const s of sessions) {
+    const b = document.createElement("button");
+    b.className = "plain"; b.textContent = s.title; b.title = s.created;
+    b.onclick = () => openSession(s.id);
+    $("history").appendChild(b);
+  }
+}
+async function refreshHistory() { fillHistory((await (await fetch("/api/state")).json()).sessions); }
+
+async function openSession(id) {
+  if (busy) return;
+  const s = await (await fetch("/api/sessions/" + id)).json();
+  sessionId = s.id; $("title").textContent = s.title; $("messages").innerHTML = "";
+  s.messages.forEach(renderMessage);
+  if ([...$("user").options].some((o) => o.value === s.user)) $("user").value = s.user;
+  setLeft(s.left); scrollDown();
+}
+function newChat() {
+  if (busy) return;
+  sessionId = null; $("title").textContent = "New chat"; $("messages").innerHTML = ""; setLeft(maxQuestions);
+}
+
+async function send() {
+  const text = $("input").value.trim();
+  if (!text || busy || questionsLeft <= 0) return;
+  busy = true; $("send").disabled = true; $("input").value = "";
+  bubble("user").textContent = text;
+  const reply = bubble("assistant");
+  const searched = document.createElement("div"); searched.className = "searched";
+  const details = document.createElement("details"); details.open = true; details.className = "hidden";
+  details.innerHTML = "<summary>Thinking</summary>";
+  const thinkBox = document.createElement("div"); details.appendChild(thinkBox);
+  const answer = document.createElement("div");
+  reply.append(searched, details, answer);
+  answer.innerHTML = `<span class="muted">${$("library").checked ? "Searching the library..." : "Thinking..."}</span>`;
+  let thinking = "", content = "", left = null;
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, session_id: sessionId, user: $("user").value,
+                             use_memory: $("memory").checked, use_library: $("library").checked }),
+    });
+    const reader = response.body.getReader(), decoder = new TextDecoder();
+    let buffer = "";
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n"); buffer = lines.pop();
+      for (const line of lines.filter(Boolean)) {
+        const e = JSON.parse(line);
+        if (e.type === "session") { sessionId = e.id; }
+        else if (e.type === "searched") { searched.textContent = "Searched for: " + e.text; }
+        else if (e.type === "thinking") { thinking += e.text; details.classList.remove("hidden"); thinkBox.innerHTML = markdown(thinking); }
+        else if (e.type === "content") { content += e.text; answer.innerHTML = markdown(content); }
+        else if (e.type === "done") {
+          $("title").textContent = e.title; left = e.left; details.open = false;
+          if (e.sources.length) reply.insertAdjacentHTML("beforeend", sourcesHtml(e.sources));
+        }
+        else if (e.type === "error") { answer.innerHTML = `<span class="error">Could not get a reply: ${esc(e.message)}</span>`; }
+        scrollDown();
+      }
+    }
+  } catch (error) {
+    answer.innerHTML = `<span class="error">Could not reach the server: ${esc(String(error))}</span>`;
+  }
+  busy = false;
+  setLeft(left === null ? questionsLeft : left);
+  refreshHistory();
+}
+
+$("form").onsubmit = (e) => { e.preventDefault(); send(); };
+$("input").onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } };
+$("new").onclick = newChat;
+$("adduser").onclick = async () => {
+  const name = $("newuser").value.trim();
+  if (!name) return;
+  const r = await (await fetch("/api/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) })).json();
+  fillUsers(r.users, r.name); $("newuser").value = "";
+};
+loadState();
+</script>
+</body>
+</html>

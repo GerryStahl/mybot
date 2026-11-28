@@ -80,6 +80,22 @@ The project includes:
 
 - Parameters:26.4B, 3.4B active; Note: each extra pass through the looped layers adds about 1.0B effective active parameters. Since the model runs with three passes, there are 5.4B effective active parameters per token.
 
+## LLM models on this computer:
+- Ollama has 8 entries installed: Manifest: /Users/GStahl2/.ollama/models/manifests/registry.ollama.ai/library/inkling-2-mini/latest
+
+- Model	Parameters	Size on disk	Quantization
+mybot:latest	        26.4B	20 GB	nvfp4
+inkling-2-mini:latest	26.4B	20 GB	nvfp4
+qwen2.5:14b	            14.8B	9.0 GB	Q4_K_M
+llama3.1:8b	            8.0B	4.9 GB	Q4_K_M
+llama3.1:latest	        8.0B	4.9 GB	Q4_K_M
+llama3:latest	        8.0B	4.7 GB	Q4_0
+gemma3:4b	            4.3B	3.3 GB	Q4_K_M
+nomic-embed-text:latest	137M	274 MB	F16
+- embedding length      2304               
+- Same weights: mybot is your custom model from the Modelfile, built on inkling-2-mini, so they share the same weights. Likewise, llama3.1:8b and llama3.1:latest have the same ID. The real disk use is about 39 GB, not the roughly 72 GB you get by adding up the Size column.
+- Embedding model: nomic-embed-text produces embeddings for search. It isn't a chat model.
+
 ## Initial steps
 
 - Update Ollama. Use the menu-bar icon and choose "Restart to update", or install from ollama.com/download. Then check ollama --version shows 0.40.17 or newer.
@@ -105,6 +121,31 @@ The project includes:
 - Run: `.venv/bin/streamlit run src/app_streamlit.py` and open http://localhost:8501 (Ollama must be running).
 - `src/core.py` holds the chat and history logic with no UI code; `src/app_streamlit.py` is a thin Streamlit layer. A FastAPI + HTML front end can reuse `core.py`.
 - Each chat, including the model's thinking, is saved as JSON in `history/`.
+- FastAPI + HTML version: `.venv/bin/uvicorn app_fastapi:app --app-dir src --port 8000`, then open http://localhost:8000. The server is `src/app_fastapi.py`; the whole page (HTML, CSS, JavaScript) is the single file `src/web/index.html`, so colors, wording and checkboxes can be changed there. Both front ends call `core.chat_turn`, so they behave the same.
+
+## Follow-up questions
+
+- A chat holds up to 8 questions (`core.MAX_QUESTIONS`, as in CSCLbot); the page shows how many are left.
+- Without the library, a follow-up works because the whole conversation is sent to the model each time.
+- With library search on, a follow-up is first rewritten into a standalone question by the local model (`core.standalone_question`, using the last 3 question/answer pairs), so "How do they differ from individual cognition?" is searched as "How does group cognition differ from individual cognition?". The rewritten question is shown as "Searched for: ..." and saved with the answer. This adds about 5-7 seconds per library follow-up.
+
+## Memory (in `core.py`)
+
+- `build_system_prompt(session)` builds the system message sent with every request: the SYSTEM text from the `Modelfile` (Ollama drops the Modelfile SYSTEM when a request has its own system message, so it is re-sent), the self-model, the profile of the current user, and a condensed recall of the most recent earlier sessions, including shortened thinking (budget: 5 sessions / 6000 characters).
+- Self-model: `personality/self.json`. User profiles: `memory/profiles/<Name>.json`. Both are created with empty fields on first use; edit them by hand. They are git-ignored because the repository is public.
+- The sidebar lets you pick or add the person you are talking with (saved in each session as `user`) and switch memory off to compare behavior with and without it.
+- Not done yet: relevance-based recall (currently recency only).
+
+## Library search (RAG over the e-library and ijCSCL articles)
+
+- Tick **Search the ijCSCL and e-library documents** in the sidebar to retrieve passages for your next message. They are added to the system prompt with their APA in-text citations, and the sources used are saved with the answer (`sources` in the history JSON) and shown under "Library sources".
+- `src/library_search.py` is copied from the CSCLbot project (`~/AI/csclbot/src/search.py`): dense `e5-base-v2` + BM25 + a page-level keyword index, merged by reciprocal rank fusion. It covers 17,441 e-library chunks, 335 chapter summaries, 463 ijCSCL article summaries and 8,226 passages of open-access articles. Retrieval only; Inkling writes the answer.
+- The index (about 140 MB) is a copy of `~/AI/csclbot/data/index` and `references.json` in `data/library/`. It is git-ignored, so on a new machine copy it from CSCLbot again. The `e5-base-v2` model must be in the Hugging Face cache (`~/.cache/huggingface`); it is loaded offline.
+- Follow-up questions are rewritten before searching (see Follow-up questions).
+
+## Look and feel
+
+- Colors are set in `.streamlit/config.toml` (light green). Streamlit cannot restructure the page; the FastAPI + HTML front end (`src/web/index.html`) can, and is the route for arbitrary HTML, instructions and widgets.
 
 ## End-of-day routine
 

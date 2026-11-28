@@ -4,3 +4,6 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 history/*.json
+memory/profiles/
+personality/self.json
+data/library/

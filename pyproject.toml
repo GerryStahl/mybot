@@ -5,5 +5,8 @@ line-length = 100
 select = ["E", "F", "I", "UP"]
 ignore = ["E402"]  # sys.path is adjusted before importing core
 
+[tool.ruff.lint.per-file-ignores]
+"src/library_search.py" = ["E501"]  # copied from CSCLbot with long docstrings and messages
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
